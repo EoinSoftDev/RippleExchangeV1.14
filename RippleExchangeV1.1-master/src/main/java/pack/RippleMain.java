@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.sql.*;
 
 /**
  * Created by 10318411 on 03/02/2016.
@@ -61,7 +62,50 @@ public class RippleMain {
             file.flush();
             file.close();
         }
+        Statement statement=null;
+        Connection myConn=null;
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
 
+            myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false","root","Scorpio21*");
+
+            PreparedStatement preparedStatement = myConn.prepareStatement("INSERT INTO test (exchanges) VALUES(?)");
+
+            preparedStatement.setString(1, jsonObject.toString());
+
+            int insertCount=0;
+            insertCount = preparedStatement.executeUpdate();
+
+/*
+            String st="{\"employees\":[\n" +
+        "    {\"firstName\":\"John\", \"lastName\":\"Doe\"},\n" +
+        "    {\"firstName\":\"Anna\", \"lastName\":\"Smith\"},\n" +
+        "    {\"firstName\":\"Peter\", \"lastName\":\"Jones\"}\n" +
+        "]}";
+            String sql= "INSERT INTO test(data) VALUES("+st+")";
+
+            statement.executeUpdate(sql);
+*/
+            System.out.println("Database created");
+        } catch(SQLException se){
+            se.printStackTrace();
+        }catch(Exception e){
+            //handle errors for Class.forname
+            e.printStackTrace();
+        }finally{
+            try{
+                if(statement!=null)
+                    statement.close();
+            }catch(SQLException se2){
+            }// nothing we can do
+            try{
+                if(myConn!=null)
+                    myConn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+
+        }
         Json2SparkSQL test= new Json2SparkSQL();
        test.dataFrame();
         //call the method from the pojo
