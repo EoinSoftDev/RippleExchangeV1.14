@@ -1,12 +1,34 @@
 package pack;
 
 import com.google.gson.JsonObject;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.rdd.RDD;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
+import org.datanucleus.store.types.backed.*;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 10318411 on 03/02/2016.
@@ -24,7 +46,14 @@ public class RippleMain {
         String counter ="EUR+rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq";
         //to default to current date, remove date variable
         String date="2015-01-13T19:57:00Z";
+        //String date="2015-01-13";
+     //   Date date = new Date();
  ;      String apiMethod = "stats";
+        String thisMoment = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                .withZone(ZoneOffset.UTC)
+                .format(Instant.now());
+        System.out.println(thisMoment);
+        ArrayList<URL> URLList= new ArrayList<URL>();
         //protected String apiMethod = "exchange_rates";
 
         //select which api method you want to retrieve
@@ -35,23 +64,65 @@ public class RippleMain {
             case ("exchange_rates"):
                 rippleUrl = new URL("https://data.ripple.com/v2/" + apiMethod + "/" + base + "/" + counter + "?" + date);
                 System.out.println("1");
+                /*String str1=thisMoment.substring(0,19)+"Z";
+                //LocalDateTime date1 = LocalDateTime.parse(str1, DateTimeFormatter.ISO_INSTANT.withLocale(Locale.ENGLISH));
+                for(int i=0;i<24;i+=2){
+                    //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ISO_INSTANT);
+                    String str3="";
+                    if(i<10){
+                        str3="0";
+                    }
+                    String str2= str1.substring(0,11)+str3+i+str1.substring(13,19);
+                   // date1.minusHours(2);
+                   // date1.minusMinutes(1);
+                    System.out.println(str2); // 2010-01-02
+                }*/
                 objType= new ExchangeRates();
                 break;
             case ("stats"):
-                rippleUrl = new URL(new StringBuilder().append("https://data.ripple.com/v2/").append(apiMethod).append("/").append("?start=2015-08-30&end=2015-08-31&interval=hour&family=metric&metrics=accounts_created,exchanges_count,ledger_count,payments_count").toString());
+                //CAN GET LAST 200 RESUlTS
+                String start="2016-03-15";
+                String end="2014-08-31";
+                String interval="hour";
+                   // rippleUrl = new URL(new StringBuilder().append("https://data.ripple.com/v2/").append(apiMethod).append("/").append("?start=2016-03-15&end=2014-08-31&interval=day&family=metric&metrics=accounts_created,exchanges_count,ledger_count,payments_count").toString());
+               /* for(int i=0;i<20;i++)
+                {
+
+                    String modifiedDate= new SimpleDateFormat("yyyy-MM-dd").format(Instant.now().minusSeconds(31536000));
+                    //!!!MOTHERFUCKER I JUST REALISE THAT THE QUERY IS ALREADY A SEARCH BETWEEN TWO DATES
+                    rippleUrl = new URL(new StringBuilder().append("https://data.ripple.com/v2/").append(apiMethod).append("/").append("?start=2016-03-30&end=2015-08-31&interval=hour&family=metric&metrics=accounts_created,exchanges_count,ledger_count,payments_count").toString());
+                    URLList.add(rippleUrl);
+                }*/
                 System.out.println("2");
+                URLList=APIQueries.createQueries(apiMethod,start,end,interval);
                 objType=new Stats();
                 break;
 
             default: System.out.println("no url");
 
         }
-        System.out.println(rippleUrl);
+        //Create a connection to the database
 
-        //parsing the json from the url
-       JsonObject jsonObject = RippleExchange.jsonParse(RippleExchange.urlJsonString((rippleUrl)));
+        Connection myConn=null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
 
-        FileWriter file = new FileWriter("/home/eoin/Documents/JsonFiles/file1.txt");
+            myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false", "root", "Scorpio21*");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+            Statement statement=null;
+            URL rippleURL=null;
+        //iterate through URLS creating JSONS and storing them to a mySQL table
+     Iterator iter=URLList.iterator();
+        while(iter.hasNext()) {
+            rippleUrl = (URL) iter.next();
+
+            //parsing the json from the url
+            JsonObject jsonObject = RippleExchange.jsonParse(RippleExchange.urlJsonString((rippleUrl)));
+//Writing a json to a txt file
+        /*FileWriter file = new FileWriter("/home/eoin/Documents/JsonFiles/file1.txt");
         try{
             file.write(String.valueOf(jsonObject));
             System.out.println("Sucessful copy");
@@ -61,20 +132,14 @@ public class RippleMain {
         }finally {
             file.flush();
             file.close();
-        }
-        Statement statement=null;
-        Connection myConn=null;
-        try{
-            Class.forName("com.mysql.jdbc.Driver");
+        }*/
+            try {
+                PreparedStatement preparedStatement = myConn.prepareStatement("INSERT INTO test (exchanges) VALUES(?)");
 
-            myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false","root","Scorpio21*");
+                preparedStatement.setString(1, jsonObject.toString());
 
-            PreparedStatement preparedStatement = myConn.prepareStatement("INSERT INTO test (exchanges) VALUES(?)");
-
-            preparedStatement.setString(1, jsonObject.toString());
-
-            int insertCount=0;
-            insertCount = preparedStatement.executeUpdate();
+                int insertCount = 0;
+                insertCount = preparedStatement.executeUpdate();
 
 /*
             String st="{\"employees\":[\n" +
@@ -86,31 +151,68 @@ public class RippleMain {
 
             statement.executeUpdate(sql);
 */
-            System.out.println("Database created");
-        } catch(SQLException se){
-            se.printStackTrace();
-        }catch(Exception e){
-            //handle errors for Class.forname
-            e.printStackTrace();
-        }finally{
-            try{
-                if(statement!=null)
-                    statement.close();
-            }catch(SQLException se2){
-            }// nothing we can do
-            try{
-                if(myConn!=null)
-                    myConn.close();
-            }catch(SQLException se){
+                //System.out.println("Database created");
+            } catch (SQLException se) {
                 se.printStackTrace();
-            }//end finally try
-
+            }
         }
-        Json2SparkSQL test= new Json2SparkSQL();
-       test.dataFrame();
+        //reading from mysql to spark dataframe
+        //"jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false", "root", "Scorpio21*"
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("url","jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false&user=root&password=Scorpio21*");
+        options.put("dbtable", "test");
+        JavaSparkContext sc = new JavaSparkContext(new SparkConf().setAppName("DBConnection").setMaster("local[*]"));
+        SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+
+        // DataFrame jdbcDF = sqlContext.load("jdbc", options).cache();
+        DataFrame jdbcDF = sqlContext.jdbc(options.get("url"),options.get("dbtable"));
+       jdbcDF = jdbcDF.select("*").where(jdbcDF.col("exchanges").isNotNull());
+        RDD h= jdbcDF.rdd();
+        //JavaRDD gg=jdbcDF.toJavaRDD();
+        Row[] rows = jdbcDF.collect();
+        List<String> data=new LinkedList<>();
+        for (Row row2 : rows) {
+            data.add(row2.toString());
+        }
+
+        JavaRDD<String> distData = sc.parallelize(data);
+        DataFrame df=sqlContext.read().json(distData);
+        //DataFrame jdbcDF2=sqlContext.read().json(h);
+      // DataFrame jdbcDF2= sqlContext.read().json(jdbcDF.select("*").where(jdbcDF.col("exchanges").isNotNull()));
+       /* System.out.println("Data------------------->" + jdbcDF.toJSON().first());
+        Row[] rows = jdbcDF.collect();
+        System.out.println("Without Filter \n ------------------------------------------------- ");
+        for (Row row2 : rows) {
+            System.out.println(row2.toString());
+        }*/
+        jdbcDF.show();
+        df.show();
+        //jdbcDF2.show();
+       /* System.out.println("Filter Data\n ------------------------------------------------- ");
+        jdbcDF = jdbcDF.select("*").where(jdbcDF.col("exchanges").isNotNull());
+        Row[] rows = jdbcDF.collect();
+        rows = jdbcDF.collect();
+        for (Row row2 : rows) {
+            System.out.println(row2.toString());
+        }*/
+        try {
+            if (statement != null)
+                statement.close();
+        } catch (SQLException e){
+            e.getErrorCode();
+        }
+        try {
+            if (myConn != null)
+               myConn.close();
+        }catch (SQLException p){
+            p.getErrorCode();
+        }
+//            Json2SparkSQL test= new Json2SparkSQL();
+  //     test.dataFrame();
         //call the method from the pojo
         //System.out.println(Arrays.deepToString(RippleExchange.toPojo(jsonObject,objType).getStats()));
-        System.out.println(Arrays.deepToString(RippleExchange.toPojo(jsonObject,objType).getStats()));
+        //------System.out.println(Arrays.deepToString(RippleExchange.toPojo(jsonObject,objType).getStats()));
+
         /*
         //gateways at https://ripple.com/knowledge_center/gateway-information/
 

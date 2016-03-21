@@ -41,7 +41,6 @@ public class RippleExchange {
     }
     //parse the string to a json object
     public static JsonObject jsonParse(String jsonString) {
-        System.out.println(jsonString);
         JsonObject jsonObject = (new JsonParser()).parse(jsonString).getAsJsonObject();
         return jsonObject;
     }
