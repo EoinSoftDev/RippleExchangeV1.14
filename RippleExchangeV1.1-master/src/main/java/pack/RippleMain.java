@@ -175,8 +175,57 @@ public class RippleMain {
 
         DataFrame test = personPositions.select(
                 personPositions.col("stat1").getField("accounts_created").as("accounts"), personPositions.col("stat1").getField("exchanges_count").as("exchanges"), personPositions.col("stat1").getField("ledger_count").as("ledger"), personPositions.col("stat1").getField("payments_count").as("payments"), personPositions.col("stat1").getField("date").as("date"));
-
         test.show();
+        //System.out.println(TimeSeries.creatSeries(test).returnRates());
+        //System.out.println(TimeSeries.creatSeries(test).seriesStats());
+        // DataFrame idf=
+        test.drop("ledger");
+
+        test.col("accounts").cast("int");
+        test.col("exchanges").cast("int");
+        //  idf.col("ledger").cast("String");
+        test.col("payments").cast("int");
+        test.col("date").cast("String");
+
+        DataFrame df1 = test.withColumnRenamed("accounts", "oldaccounts").withColumnRenamed("exchanges", "oldexchanges")
+                .withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate");
+        DataFrame df2 = df1.withColumn("accounts", df1.col("oldaccounts").cast("int")).drop("oldaccounts")
+                .withColumn("exchanges", df1.col("oldexchanges").cast("int")).drop("oldexchanges")
+                .withColumn("payments", df1.col("oldpayments").cast("int")).drop("oldpayments")
+                .withColumn("date", df1.col("olddate").cast("String")).drop("olddate");
+        DataFrame cast1 = TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments");
+
+        cast1.drop("exchanges");
+        //  idf.col("ledger").cast("String");
+        cast1.col("payments").cast("String");
+
+        cast1.col("date").cast("String");
+
+        DataFrame dfc1 = cast1.withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate");
+        DataFrame dfc2 = dfc1.withColumn("payments", dfc1.col("oldpayments").cast("String")).drop("oldpayments")
+                .withColumn("date", dfc1.col("olddate").cast("String")).drop("olddate");
+        dfc2.toJSON();
+        //  dfc2.createJDBCTable("jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false&user=root&password=Scorpio21*","new",true);
+        //.toInstantsDataFrame(sqlContext)
+/*
+        idf.drop("ledger");
+
+        idf.col("accounts").cast("int");
+        idf.col("exchanges").cast("Long");
+      //  idf.col("ledger").cast("String");
+        idf.col("payments").cast("Long");
+        idf.col("date").cast("String");
+
+        DataFrame df1 =idf.withColumnRenamed("accounts","oldaccounts").withColumnRenamed("exchanges","oldexchanges")
+                .withColumnRenamed("payments","oldpayments").withColumnRenamed("date","olddate");
+        DataFrame df2=df1.withColumn("accounts",df1.col("oldaccounts").cast("int")).drop("oldaccounts")
+                .withColumn("exchanges",df1.col("oldexchanges").cast("Long")).drop("oldexchanges")
+                .withColumn("payments",df1.col("oldpayments").cast("Long")).drop("oldpayments")
+                .withColumn("date",df1.col("olddate").cast("String")).drop("olddate");
+        df2.show();
+
+*/
+/*
 
         jdbcDF.drop("count").drop("result").drop("rate").drop("marker").show();
         jdbcDF.drop("count").drop("result").drop("rate").drop("marker").schema();
@@ -185,7 +234,25 @@ public class RippleMain {
         df.drop("count").drop("marker").drop("rate").drop("result").show();
         df.drop("count").drop("marker").drop("rate").drop("result").schema();
 
+        //df.drop("count").drop("marker").drop("rate").drop("result").rdd().toJavaRDD();
+//MAYBE THIS SHIT WOULD BE A HELLUVALOT EASIER WITH D
+        JavaRDD<Vector> vectors = test.javaRDD().map(new Function<Row, Vector>() {
+            @Override
+            public Vector call(Row row) throws Exception {
+                // todo: select whichever fields from the sessionsAgg that should be included in the vectors
+                //long a = row.getLong(row.fieldIndex("accounts"));
+                long e = row.getLong(row.fieldIndex("exchanges"));
+//                long l = row.getLong(row.fieldIndex("ledger"));
+                long p = row.getLong(row.fieldIndex("payments"));
+                //String d = row.getString(row.fieldIndex("date"));
+                return Vectors.dense(new double[]{ e, p});
+            }
+        });
 
+        System.out.println(Statistics.colStats(vectors.rdd()));
+        System.out.println(Statistics.corr(vectors.rdd(), "pearson"));
+*/
+        // JavaRDD<Vector> vectors = df.drop("count").drop("marker").drop("rate").drop("result").javaRDD().map(new Function<Row, Vector>());
         //Row[] statist=jdbcDF.select("stats").collect();
 
 
