@@ -23,7 +23,7 @@ public class RippleMain {
     public JsonObject jsonObject;
 
     public static void main(String[] args) throws IOException /*try*/ {
-
+        //hardcoded variables
         String base = "XRP";
         String counter = "EUR+rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq";
         //to default to current date, remove date variable
@@ -181,6 +181,9 @@ public class RippleMain {
         // DataFrame idf=
         test.drop("ledger");
 
+
+        //all casting was doen in order to prevent the ClassCastException but was unsuccessful
+        //even though this approach worked for Dara with his project when he got the same exception
         test.col("accounts").cast("int");
         test.col("exchanges").cast("int");
         //  idf.col("ledger").cast("String");
@@ -193,6 +196,9 @@ public class RippleMain {
                 .withColumn("exchanges", df1.col("oldexchanges").cast("int")).drop("oldexchanges")
                 .withColumn("payments", df1.col("oldpayments").cast("int")).drop("oldpayments")
                 .withColumn("date", df1.col("olddate").cast("String")).drop("olddate");
+
+        //**************************This is the start of the code in which you should be interested in***************************************8
+        //TimeSeries.creatSeries returns a JavaTimeSeriesRDD (from the SparkTS library)
         DataFrame cast1 = TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments");
 
         cast1.drop("exchanges");
@@ -204,7 +210,14 @@ public class RippleMain {
         DataFrame dfc1 = cast1.withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate");
         DataFrame dfc2 = dfc1.withColumn("payments", dfc1.col("oldpayments").cast("String")).drop("oldpayments")
                 .withColumn("date", dfc1.col("olddate").cast("String")).drop("olddate");
-        dfc2.toJSON();
+        //here is where the exception is coming from
+        //note that methods can be called on the (Observations)dataframe but anything which trys to display the data fails
+        try {
+            dfc2.show();
+        } catch (ClassCastException e) {
+            e.getCause();
+            e.printStackTrace();
+        }
         //  dfc2.createJDBCTable("jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false&user=root&password=Scorpio21*","new",true);
         //.toInstantsDataFrame(sqlContext)
 /*
