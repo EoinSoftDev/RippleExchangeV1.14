@@ -50,6 +50,15 @@
     </orderEntry>
     <orderEntry type="library" name="jdk1.8" level="application" />
     <orderEntry type="library" name="scala-sdk-2.10.6" level="project" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/SparkTs/sparkts-0.3.0-jar-with-dependencies.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.6.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.avro:avro-mapred:hadoop2:1.7.7" level="project" />
     <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:1.7.7" level="project" />
@@ -241,7 +250,7 @@
     <orderEntry type="library" name="Maven: org.datanucleus:datanucleus-core:3.2.10" level="project" />
     <orderEntry type="library" name="Maven: org.apache.thrift:libthrift:0.9.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.thrift:libfb303:0.9.2" level="project" />
-    <orderEntry type="library" name="Maven: com.cloudera.sparkts:sparkts:0.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.cloudera.sparkts:sparkts:0.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scalap:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.threeten:threeten-extra:0.9" level="project" />
@@ -252,14 +261,5 @@
     <orderEntry type="library" name="Maven: com.lowagie:itext:2.1.5" level="project" />
     <orderEntry type="library" name="Maven: bouncycastle:bcmail-jdk14:138" level="project" />
     <orderEntry type="library" name="Maven: bouncycastle:bcprov-jdk14:138" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../sparkts-0.2.0-jar-with-dependencies.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
   </component>
 </module>

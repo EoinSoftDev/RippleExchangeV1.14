@@ -36,19 +36,12 @@
             <id>Spark repository</id>
             <url>http://www.sparkjava.com/nexus/content/repositories/spark/</url>
         </repository>
-        <repository>
-            <id>cloudera</id>
-            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-        </repository>
+
         <repository>
             <id>cloudera-repo-releases</id>
             <url>https://repository.cloudera.com/artifactory/repo/</url>
         </repository>
-        <repository>
-            <id>cloudera-repos</id>
-            <name>Cloudera Repos</name>
-            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-        </repository>
+
     </repositories>
 
     <dependencies>
@@ -86,7 +79,7 @@
         <dependency>
             <groupId>com.cloudera.sparkts</groupId>
             <artifactId>sparkts</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0</version>
         </dependency>
 </dependencies>
 

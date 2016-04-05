@@ -64,7 +64,7 @@ public class TimeSeries {
 
         // Align the ticker data on the DateTimeIndex to create a TimeSeriesRDD
 
-        JavaTimeSeriesRDD tickerTsrdd = JavaTimeSeriesRDDFactory.javaTimeSeriesRDDFromObservations(
+        JavaTimeSeriesRDD tickerTsrdd = JavaTimeSeriesRDDFactory.timeSeriesRDDFromObservations(
                 dtIndex, df2, "payments", "accounts", "exchanges");
 
         // Cache it in memory
