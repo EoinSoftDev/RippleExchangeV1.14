@@ -30,7 +30,7 @@ public class APIQueries {
             DateTime d1;
             DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
             DateTime dt = formatter.parseDateTime(start);
-            System.out.println(dt);
+            // System.out.println(dt);
             //Date date1;
             //Date date2;
 

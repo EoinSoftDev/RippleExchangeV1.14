@@ -5,13 +5,25 @@ import com.cloudera.sparkts.DateTimeIndex;
 import com.cloudera.sparkts.api.java.DateTimeIndexFactory;
 import com.cloudera.sparkts.api.java.JavaTimeSeriesRDD;
 import com.cloudera.sparkts.api.java.JavaTimeSeriesRDDFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.SQLContext;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class TimeSeries {
    /* private static DataFrame loadObservations(JavaSparkContext sparkContext, SQLContext sqlContext,
@@ -33,7 +45,7 @@ public class TimeSeries {
         return sqlContext.createDataFrame(rowRdd, schema);
     }*/
 
-    public static JavaTimeSeriesRDD<String> creatSeries(DataFrame df2, JavaSparkContext context) {
+    public static JavaTimeSeriesRDD<String> creatSeries(DataFrame df2, JavaSparkContext context, SQLContext sqlContext) {
       /*  SparkConf conf = new SparkConf().setAppName("Spark-TS Ticker Example").setMaster("local");
         conf.set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec");
         JavaSparkContext context = new JavaSparkContext(conf);
@@ -43,6 +55,80 @@ public class TimeSeries {
 
         // Create an daily DateTimeIndex over August and September 2015 //test("accounts") !=null
         ZoneId zone = ZoneId.systemDefault();
+
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        String start1 = "2016-01-01T00:00:00Z";
+        String end1 = "2016-02-01T00:00:00Z";
+        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        try {
+            Date startDate = formatter.parse(start1);
+            Date endDate = formatter.parse(end1);
+            LocalDateTime start = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime end = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+
+            Timestamps stamps = new Timestamps();
+            String jStr = "{" + '"' + "dateArray" + '"' + ":[";
+            for (LocalDateTime date = start; date.isBefore(end); date = date.plusDays(1)) {
+                // Do your job here with `date`.
+//"\'{\"hello\":\"world\"}\'"
+// "{\"hello\":\"world\"}"
+                //"payments":1361.0
+                jStr += "{" + '"' + "payments" + '"' + ":" + '"' + "null" + '"' + ", ";
+
+                jStr += '"' + "key" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"' + ", ";
+
+                jStr += '"' + "date" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"';
+                if (!date.plusDays(1).isEqual(end))
+                    jStr += "},\n";
+                else {
+                    jStr += "}";
+                }
+
+                //stamps.addDate(Timestamp.valueOf(date));
+
+                //date.format(formatter1)
+            }
+            jStr += "]}";
+            System.out.println(jStr);
+            // jStr = jStr.replace("\\", "");
+            JsonObject jDatesObj = (new JsonParser()).parse(jStr).getAsJsonObject();
+            //  JsonObject stampsJson=gson.toJson(stamps);
+            //System.out.println("stamps string"+stamps.toString())
+
+            try (Writer writer = new FileWriter("Output.json")) {
+                //BufferedWriter bw = new BufferedWriter(writer);
+                // bw.flush();
+                GsonBuilder gbuild = new GsonBuilder();
+                gbuild.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                Gson gson = gbuild.create();
+
+                gson.toJson(jDatesObj, writer);
+                //bw.close();
+            } catch (IOException e) {
+                e.getCause();
+            }
+
+
+            // JavaRDD<String> forecastDates=context.parallelize(stamps.getTimeList());
+            // DataFrame df = sqlContext.read().json()
+            //df2.unionAll(forecastDates);
+        } catch (ParseException p) {
+            p.printStackTrace();
+        }
+
+        DataFrame addJson = sqlContext.read().json("Output.json");
+
+        DataFrame formSimilar = addJson.select(org.apache.spark.sql.functions.explode(addJson.col("dateArray")));
+        formSimilar.printSchema();
+        formSimilar.show();
+        DataFrame makeSimilar = formSimilar.select(
+                formSimilar.col("col").getField("payments"), formSimilar.col("col").getField("key"), formSimilar.col("col").getField("date"));
+        formSimilar.printSchema();
+        formSimilar.show();
+
+        // df2.drop("exchanges").drop("accounts").unionAll(makeSimilar);
 
         //
       /*  List<String> testDates = test.toJavaRDD().map(
@@ -59,22 +145,36 @@ public class TimeSeries {
 
         DateTimeIndex dtIndex = DateTimeIndexFactory.uniformFromInterval(
                 ZonedDateTime.of(LocalDateTime.parse("2014-08-31T00:00:00"), zone),
-                ZonedDateTime.of(LocalDateTime.parse("2016-03-17T00:00:00"), zone),
+                ZonedDateTime.of(LocalDateTime.parse("2017-03-17T00:00:00"), zone),
                 new BusinessDayFrequency(24, 0));
 
         // Align the ticker data on the DateTimeIndex to create a TimeSeriesRDD
 
-        JavaTimeSeriesRDD tickerTsrdd = JavaTimeSeriesRDDFactory.timeSeriesRDDFromObservations(
-                dtIndex, df2, "payments", "accounts", "exchanges");
+
+        df2.printSchema();
+
+      /*  JsonBuilderFactory factory = Json.createBuilderFactory(config);
+        JsonObject datesobject = Json.createObjectBuilder().build();
+*/
+
+        // DataFrame datesProjected = sqlContext.read().json(projectedDate);
+
+        // df2.unionAll(datesProjected);
+
+
+        JavaTimeSeriesRDD tickerTsrdd = JavaTimeSeriesRDDFactory.timeSeriesRDDFromObservations(dtIndex, df2.drop("exchanges").drop("accounts").unionAll(makeSimilar), "date", "key", "exchanges");
 
         // Cache it in memory
         tickerTsrdd.cache();
+        System.out.println("ticker" + tickerTsrdd.count());
 
         // Count the number of series (number of symbols)
 //        System.out.println(tickerTsrdd.count());
 
         // Impute missing values using linear interpolation
+
         JavaTimeSeriesRDD<String> filled = tickerTsrdd.fill("linear");
+
 
         return filled;
 /*filled.map(new Function<Row, String>() {

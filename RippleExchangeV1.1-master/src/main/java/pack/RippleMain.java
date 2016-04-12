@@ -1,5 +1,6 @@
 package pack;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -8,6 +9,7 @@ import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.hive.HiveContext;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,18 +27,21 @@ public class RippleMain {
     public static void main(String[] args) throws IOException /*try*/ {
         //hardcoded variables
         String base = "XRP";
+        //selects currency and default gateway for the transaction data
         String counter = "EUR+rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq";
         //to default to current date, remove date variable
         String date = "2015-01-13T19:57:00Z";
         //String date="2015-01-13";
         //   Date date = new Date();
+        //select wheter we are looking for exchange rates or stats
         String apiMethod = "stats";
+        //DELETE??
         String thisMoment = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 .withZone(ZoneOffset.UTC)
                 .format(Instant.now());
-        System.out.println(thisMoment);
+        //an array list to hold the url API queries we wish to make
         ArrayList<URL> URLList = new ArrayList<URL>();
-        //protected String apiMethod = "exchange_rates";
+
 
         //select which api method you want to retrieve
         URL rippleUrl = null;
@@ -145,11 +150,12 @@ public class RippleMain {
         options.put("url", "jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false&user=root&password=Scorpio21*");
         options.put("dbtable", "test");
         JavaSparkContext sc = new JavaSparkContext(new SparkConf().setAppName("DBConnection").setMaster("local[*]"));
-        SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+        //SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+        SQLContext sqlContext = new HiveContext(sc);
 
         // DataFrame jdbcDF = sqlContext.load("jdbc", options).cache();
         DataFrame jdbcDF = sqlContext.jdbc(options.get("url"), options.get("dbtable"));
-        jdbcDF = jdbcDF.select("*").where(jdbcDF.col("exchanges").isNotNull());
+        jdbcDF = jdbcDF.select("*");//.where(jdbcDF.col("exchanges").isNotNull());
 
 
         RDD h = jdbcDF.rdd();
@@ -170,53 +176,86 @@ public class RippleMain {
         for (Row row2 : rows) {
             System.out.println(row2.toString());
         }*/
+        //df.dropDuplicates();
+
+
+
         DataFrame personPositions = df.select(df.col("stats").as("stat"),
                 org.apache.spark.sql.functions.explode(df.col("stats")).as("stat1"));
+        System.out.println(personPositions.count());
 
         DataFrame test = personPositions.select(
                 personPositions.col("stat1").getField("accounts_created").as("accounts"), personPositions.col("stat1").getField("exchanges_count").as("exchanges"), personPositions.col("stat1").getField("ledger_count").as("ledger"), personPositions.col("stat1").getField("payments_count").as("payments"), personPositions.col("stat1").getField("date").as("date"));
-        test.show();
+        System.out.println("test" + test.count());
+        test.na().fill(ImmutableMap.of("accounts", 0, "exchanges", 0, "ledger", 0, "payments", 0));
+        test.na().drop().show();
+
+
+        // Timestamp.valueOf(test.apply("date").getField("date"));
         //System.out.println(TimeSeries.creatSeries(test).returnRates());
         //System.out.println(TimeSeries.creatSeries(test).seriesStats());
         // DataFrame idf=
-        test.drop("ledger");
+        test.drop("ledger");             // yyyy-mm-ddThh:mm:ss
+//    System.out.println(Timestamp.valueOf("2015-01-13T19:57:00Z"));
 
-
+    /*    df.withColumn("vs", explode(col("vs")))
+                .groupBy(col("id"))
+                .agg(collect_list(col("vs")))
+                .show();*/
+        //2015-08-30T00:00:00Z needs formating
+        test.select("date").show();
         //all casting was doen in order to prevent the ClassCastException but was unsuccessful
         //even though this approach worked for Dara with his project when he got the same exception
-        test.col("accounts").cast("int");
-        test.col("exchanges").cast("int");
+        test.col("accounts").cast("double");
+        test.col("exchanges").cast("double");
         //  idf.col("ledger").cast("String");
-        test.col("payments").cast("int");
-        test.col("date").cast("String");
+        test.col("payments").cast("double");
+        test.col("date").cast("timestamp");
 
+
+        test.printSchema();
+        System.out.println("test last " + test.count());
+//        System.out.println(test.count());
         DataFrame df1 = test.withColumnRenamed("accounts", "oldaccounts").withColumnRenamed("exchanges", "oldexchanges")
-                .withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate");
-        DataFrame df2 = df1.withColumn("accounts", df1.col("oldaccounts").cast("int")).drop("oldaccounts")
-                .withColumn("exchanges", df1.col("oldexchanges").cast("int")).drop("oldexchanges")
-                .withColumn("payments", df1.col("oldpayments").cast("int")).drop("oldpayments")
-                .withColumn("date", df1.col("olddate").cast("String")).drop("olddate");
+                .withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate").drop("ledger");
+        DataFrame df2 = df1.withColumn("accounts", df1.col("oldaccounts").cast("double")).drop("oldaccounts")
+                .withColumn("exchanges", df1.col("oldexchanges").cast("double")).drop("oldexchanges")
+                .withColumn("payments", df1.col("oldpayments").cast("double")).drop("oldpayments")
+                .withColumn("key", df1.col("olddate").cast("String"))
+                .withColumn("date", df1.col("olddate").cast("timestamp")).drop("olddate");
+        System.out.println("df2 " + df2.count());
+        df2.toJSON().saveAsTextFile("/home/eoin/Documents/Intellij Projects/df2.json");
 
         //**************************This is the start of the code in which you should be interested in***************************************8
         //TimeSeries.creatSeries returns a JavaTimeSeriesRDD (from the SparkTS library)
-        DataFrame cast1 = TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments");
+        DataFrame cast1 = TimeSeries.creatSeries(df2, sc, sqlContext).toObservationsDataFrame(sqlContext, "date", "key", "exchanges");
+        // TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments").toDF().printSchema();
+        // TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments").toDF().show();
 
-        cast1.drop("exchanges");
         //  idf.col("ledger").cast("String");
-        cast1.col("payments").cast("String");
 
-        cast1.col("date").cast("String");
 
-        DataFrame dfc1 = cast1.withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate");
-        DataFrame dfc2 = dfc1.withColumn("payments", dfc1.col("oldpayments").cast("String")).drop("oldpayments")
-                .withColumn("date", dfc1.col("olddate").cast("String")).drop("olddate");
-        //here is where the exception is coming from
-        //note that methods can be called on the (Observations)dataframe but anything which trys to display the data fails
+        cast1.printSchema();
+
+
         try {
-            dfc2.show();
+            cast1.show();
+            System.out.println(cast1.count());
+            System.out.println(cast1.toJavaRDD().count());
+            cast1.toJSON().saveAsTextFile("/home/eoin/Documents/Intellij Projects/sample.json");
+
         } catch (ClassCastException e) {
-            e.getCause();
             e.printStackTrace();
+        }
+        try {
+            PreparedStatement preparedStatement = myConn.prepareStatement("delete from test where exchanges is not null");
+
+            preparedStatement.executeUpdate();
+
+
+            //System.out.println("Database created");
+        } catch (SQLException se) {
+            se.printStackTrace();
         }
         //  dfc2.createJDBCTable("jdbc:mysql://localhost:3306/demo?autoReconnect=true&useSSL=false&user=root&password=Scorpio21*","new",true);
         //.toInstantsDataFrame(sqlContext)
@@ -284,7 +323,7 @@ public class RippleMain {
         for (Row row2 : rows) {
             System.out.println(row2.toString());
         }*/
-        try {
+       /* try {
             if (statement != null)
                 statement.close();
         } catch (SQLException e) {
@@ -295,7 +334,7 @@ public class RippleMain {
                 myConn.close();
         } catch (SQLException p) {
             p.getErrorCode();
-        }
+        }*/
 //            Json2SparkSQL test= new Json2SparkSQL();
         //     test.dataFrame();
         //call the method from the pojo
