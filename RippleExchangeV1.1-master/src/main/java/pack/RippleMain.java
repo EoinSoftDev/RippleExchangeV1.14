@@ -178,7 +178,7 @@ public class RippleMain {
         }*/
         //df.dropDuplicates();
 
-
+//
 
         DataFrame personPositions = df.select(df.col("stats").as("stat"),
                 org.apache.spark.sql.functions.explode(df.col("stats")).as("stat1"));
