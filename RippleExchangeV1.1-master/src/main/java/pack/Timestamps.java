@@ -1,5 +1,4 @@
 package pack;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
@@ -39,7 +38,7 @@ public class Timestamps {
             totString += "\"date\" : " + "\"" + t.toString() + "\", ";
         }
         return totString + "}";
-    }
+        }
 
 }
 //yyyy-MM-dd'T'HH:mm:ss'Z'

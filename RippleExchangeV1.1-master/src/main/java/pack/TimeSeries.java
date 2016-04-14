@@ -57,6 +57,7 @@ public class TimeSeries {
         ZoneId zone = ZoneId.systemDefault();
 
 
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         String start1 = "2016-01-01T00:00:00Z";
         String end1 = "2016-02-01T00:00:00Z";
@@ -75,7 +76,9 @@ public class TimeSeries {
 //"\'{\"hello\":\"world\"}\'"
 // "{\"hello\":\"world\"}"
                 //"payments":1361.0
-                jStr += "{" + '"' + "payments" + '"' + ":" + '"' + "null" + '"' + ", ";
+                //correct placement for null in json
+                //jStr+="{"+'"'+"payments"+'"'+":"+"null"+", ";
+                jStr += "{" + '"' + "payments" + '"' + ":" + '"' + "0.0" + '"' + ", ";
 
                 jStr += '"' + "key" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"' + ", ";
 
@@ -100,7 +103,7 @@ public class TimeSeries {
             try (Writer writer = new FileWriter("Output.json")) {
                 //BufferedWriter bw = new BufferedWriter(writer);
                 // bw.flush();
-                GsonBuilder gbuild = new GsonBuilder();
+                GsonBuilder gbuild = new GsonBuilder().serializeNulls();
                 gbuild.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                 Gson gson = gbuild.create();
 
@@ -146,7 +149,7 @@ public class TimeSeries {
         DateTimeIndex dtIndex = DateTimeIndexFactory.uniformFromInterval(
                 ZonedDateTime.of(LocalDateTime.parse("2014-08-31T00:00:00"), zone),
                 ZonedDateTime.of(LocalDateTime.parse("2017-03-17T00:00:00"), zone),
-                new BusinessDayFrequency(24, 0));
+                new BusinessDayFrequency(1, 0));
 
         // Align the ticker data on the DateTimeIndex to create a TimeSeriesRDD
 
@@ -160,9 +163,15 @@ public class TimeSeries {
         // DataFrame datesProjected = sqlContext.read().json(projectedDate);
 
         // df2.unionAll(datesProjected);
+        DataFrame df3 = df2.drop("exchanges").drop("accounts").unionAll(makeSimilar).withColumnRenamed("payments", "oldpayments").withColumnRenamed("date", "olddate")
+                .withColumnRenamed("key", "oldkey");
 
+        DataFrame df4 = df3.withColumn("payments", df3.col("oldpayments").cast("double")).drop("oldpayments")
+                .withColumn("key", df3.col("oldkey").cast("String")).drop("oldkey")
+                .withColumn("date", df3.col("olddate").cast("timestamp")).drop("olddate");
+        df4.printSchema();
 
-        JavaTimeSeriesRDD tickerTsrdd = JavaTimeSeriesRDDFactory.timeSeriesRDDFromObservations(dtIndex, df2.drop("exchanges").drop("accounts").unionAll(makeSimilar), "date", "key", "exchanges");
+        JavaTimeSeriesRDD tickerTsrdd = JavaTimeSeriesRDDFactory.timeSeriesRDDFromObservations(dtIndex, df4, "date", "key", "payments");
 
         // Cache it in memory
         tickerTsrdd.cache();
@@ -172,9 +181,8 @@ public class TimeSeries {
 //        System.out.println(tickerTsrdd.count());
 
         // Impute missing values using linear interpolation
-
         JavaTimeSeriesRDD<String> filled = tickerTsrdd.fill("linear");
-
+        System.out.println(filled.collect());
 
         return filled;
 /*filled.map(new Function<Row, String>() {

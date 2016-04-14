@@ -206,12 +206,12 @@ public class RippleMain {
         test.select("date").show();
         //all casting was doen in order to prevent the ClassCastException but was unsuccessful
         //even though this approach worked for Dara with his project when he got the same exception
-        test.col("accounts").cast("double");
+       /* test.col("accounts").cast("double");
         test.col("exchanges").cast("double");
         //  idf.col("ledger").cast("String");
         test.col("payments").cast("double");
         test.col("date").cast("timestamp");
-
+*///commented out 13 apr 16
 
         test.printSchema();
         System.out.println("test last " + test.count());
@@ -233,6 +233,7 @@ public class RippleMain {
         // TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments").toDF().show();
 
         //  idf.col("ledger").cast("String");
+
 
 
         cast1.printSchema();
