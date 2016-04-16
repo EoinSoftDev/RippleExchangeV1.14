@@ -178,7 +178,7 @@ public class RippleMain {
         }*/
         //df.dropDuplicates();
 
-//
+
 
         DataFrame personPositions = df.select(df.col("stats").as("stat"),
                 org.apache.spark.sql.functions.explode(df.col("stats")).as("stat1"));
@@ -228,7 +228,7 @@ public class RippleMain {
 
         //**************************This is the start of the code in which you should be interested in***************************************8
         //TimeSeries.creatSeries returns a JavaTimeSeriesRDD (from the SparkTS library)
-        DataFrame cast1 = TimeSeries.creatSeries(df2, sc, sqlContext).toObservationsDataFrame(sqlContext, "date", "key", "exchanges");
+        DataFrame cast1 = TimeSeries.creatSeries(df2, sc, sqlContext).toObservationsDataFrame(sqlContext, "date", "key", "payments");
         // TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments").toDF().printSchema();
         // TimeSeries.creatSeries(df2, sc).toObservationsDataFrame(sqlContext, "date", "exchanges", "payments").toDF().show();
 

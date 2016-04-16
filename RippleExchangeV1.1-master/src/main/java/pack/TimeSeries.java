@@ -76,10 +76,8 @@ public class TimeSeries {
 //"\'{\"hello\":\"world\"}\'"
 // "{\"hello\":\"world\"}"
                 //"payments":1361.0
-                //correct placement for null in json
-                //jStr+="{"+'"'+"payments"+'"'+":"+"null"+", ";
-                jStr += "{" + '"' + "payments" + '"' + ":" + '"' + "0.0" + '"' + ", ";
-
+                // jStr+="{"+'"'+"payments"+'"'+":"+"null"+", ";
+                jStr += "{" + '"' + "payments" + '"' + ":" + "0.0" + ", ";
                 jStr += '"' + "key" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"' + ", ";
 
                 jStr += '"' + "date" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"';
@@ -181,6 +179,7 @@ public class TimeSeries {
 //        System.out.println(tickerTsrdd.count());
 
         // Impute missing values using linear interpolation
+
         JavaTimeSeriesRDD<String> filled = tickerTsrdd.fill("linear");
         System.out.println(filled.collect());
 

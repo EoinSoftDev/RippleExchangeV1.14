@@ -1,0 +1,20 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="RippleExchange">
+    <output-path>$PROJECT_DIR$/out/artifacts/RippleExchange</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="RippleExchange/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="RippleExchange" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="java" />
+          <element id="library" level="project" name="scala-sdk-2.10.6" />
+          <element id="file-copy" path="$USER_HOME$/SparkTs/sparkts-0.3.0-jar-with-dependencies.jar" />
+          <element id="library" level="project" name="Mojarra-2.2.1" />
+        </element>
+      </element>
+      <element id="library" level="application" name="Maven: commons-lang:commons-lang:2.4" />
+    </root>
+  </artifact>
+</component>

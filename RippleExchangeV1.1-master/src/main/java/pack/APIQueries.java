@@ -44,7 +44,7 @@ public class APIQueries {
 
             //Convert long to String
             String dayDifference = Long.toString(differenceDates);
-            System.out.println(dayDifference);
+
 
             // Date date3=dates.parse(start);
             if (differenceDates > 8) {
@@ -55,7 +55,7 @@ public class APIQueries {
                     }
                     start = dt.toString();
                     end = end1.toString();
-                    System.out.println(start.substring(0, 10) + " , " + end.substring(0, 10));
+                    // System.out.println(start.substring(0, 10) + " , " + end.substring(0, 10));
 
                     rippleUrl = new URL(new StringBuilder().append("https://data.ripple.com/v2/").append(apiMethod).append("/").append("?start=" + start.substring(0, 10) + "&end=" + end.substring(0, 10) + "&interval=" + interval + "&family=metric&metrics=accounts_created,exchanges_count,ledger_count,payments_count").toString());
                     // System.out.println(rippleUrl.toString());
