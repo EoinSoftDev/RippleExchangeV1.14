@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Fri Apr 15 16:52:09 IST 2016:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0154-1a9f-51bb-00000fbfc238 
-on database directory /home/eoin/Documents/Intellij Projects/RippleExchangeV1.1-master/metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@15d58530 
+Wed Apr 20 16:59:36 IST 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0154-3465-ec17-00000de60b88 
+on database directory /home/eoin/Documents/Intellij Projects/RippleExchangeV1.1-master/metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@135064ea 
 Loaded from file:/home/eoin/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_73-b02

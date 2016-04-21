@@ -20,10 +20,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
-
 public class RippleMain {
+    private static String sdate;
+    private static String edate;
     public JsonObject jsonObject;
 
+    public static void setDates(String sdate1, String edate1) {
+        sdate = sdate1;
+        edate = edate1;
+    }
     public static void main(String[] args) throws IOException /*try*/ {
         //hardcoded variables
         String base = "XRP";
@@ -41,7 +46,6 @@ public class RippleMain {
                 .format(Instant.now());
         //an array list to hold the url API queries we wish to make
         ArrayList<URL> URLList = new ArrayList<URL>();
-
 
         //select which api method you want to retrieve
         URL rippleUrl = null;
@@ -240,11 +244,59 @@ public class RippleMain {
 
 
         try {
-            cast1.show();
+            //  int num=((int) cast1.count());
+            // cast1.foreach();
+            //  JsonObject jsonA = new JsonObject();
+            //    JsonArray jsonA.= new JsonArray(cast1.collectAsList().toString());
+            //   .getAsJsonArray(cast1.toJSON().toString());
+            //           jsonA.getAsJsonArray();
+            /*String[] jArr=cast1.toJSON().toArray();
+            String tot="[";
+            for (int i=0;i<jArr.length;i++){
+
+                if(!(i==jArr.length-1))
+                tot+=jArr[i].toString()+",";
+
+            }
+            tot+="]";*/
+            //  System.out.println(tot);
+            //   JsonObject jsonArray = (new JsonParser()).parse(tot).getAsJsonObject();
+            // System.out.println(jsonArray.toString());
+            // cast1.toJSON().toArray();
+            //cast1.col("date");
             System.out.println(cast1.count());
             System.out.println(cast1.toJavaRDD().count());
-            cast1.toJSON().saveAsTextFile("/home/eoin/Documents/Intellij Projects/sample.json");
+            // JsonObject jArray = (new JsonParser()).parse("{"+'"'+"Array"+'"'+":[ ]}").getAsJsonObject();
+            DataFrame jsonArray = sqlContext.read().json("/home/eoin/Documents/Intellij Projects/test.txt");
+//            jsonArray.withColumn("Array", cast1.col("date")).withColumn("Array",cast1.col("key")).withColumn("Array",cast1.col("payments"));
+            //          jsonArray.coalesce(1).toJSON().saveAsTextFile("/home/eoin/Documents/Intellij Projects/array.json");
+            cast1.coalesce(1).toJSON().saveAsTextFile("/home/eoin/Documents/Intellij Projects/sample.json");
+      /*  // Open a temporary file to write to.
+            PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("/home/eoin/Documents/Intellij Projects/sample.json/part-00000.temp")));
 
+            FileReader fileRead=new FileReader("/home/eoin/Documents/Intellij Projects/sample.json/part-00000");
+                                            ////home/eoin/Documents/Intellij Projects/sample.json/part-00000
+            BufferedReader br = new BufferedReader(fileRead);
+            LineNumberReader  lnr = new LineNumberReader(fileRead);
+            lnr.skip(Long.MAX_VALUE);
+            int lineNum=lnr.getLineNumber(); //Add 1 because line index starts at 0
+        // Finally, the LineNumberReader object should be closed to prevent resource leak
+
+            int lines=0;
+            String line="[";
+            while (line != null)
+            {   line = br.readLine();
+                lines++;
+                if(lines!=lineNum)
+                line=line+",";
+                else{line=line+"]";}
+                writer.println(line);
+
+            }
+            File realName = new File("/home/eoin/Documents/Intellij Projects/sample.json/part-00000");
+            realName.delete(); // remove the old file
+            lnr.close();
+            new File("/home/eoin/Documents/Intellij Projects/sample.json/part-00000.temp").renameTo(realName); // Rename temp file*/
         } catch (ClassCastException e) {
             e.printStackTrace();
         }

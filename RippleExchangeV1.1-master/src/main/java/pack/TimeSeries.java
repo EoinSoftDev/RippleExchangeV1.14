@@ -76,8 +76,8 @@ public class TimeSeries {
 //"\'{\"hello\":\"world\"}\'"
 // "{\"hello\":\"world\"}"
                 //"payments":1361.0
-                // jStr+="{"+'"'+"payments"+'"'+":"+"null"+", ";
-                jStr += "{" + '"' + "payments" + '"' + ":" + "0.0" + ", ";
+                jStr += "{" + '"' + "payments" + '"' + ":" + "null" + ", ";
+                // jStr += "{" + '"' + "payments" + '"' + ":" + "0.0" + ", ";
                 jStr += '"' + "key" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"' + ", ";
 
                 jStr += '"' + "date" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"';
