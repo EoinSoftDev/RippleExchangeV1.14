@@ -12,9 +12,11 @@
           <element id="library" level="project" name="scala-sdk-2.10.6" />
           <element id="file-copy" path="$USER_HOME$/SparkTs/sparkts-0.3.0-jar-with-dependencies.jar" />
           <element id="library" level="project" name="Mojarra-2.2.1" />
+          <element id="file-copy" path="$USER_HOME$/jars/spark-sql_2.10-1.6.0.jar" />
         </element>
       </element>
       <element id="library" level="application" name="Maven: commons-lang:commons-lang:2.4" />
+      <element id="library" level="project" name="Maven: org.apache.spark:spark-sql_2.10:1.6.0" />
     </root>
   </artifact>
 </component>

@@ -9,41 +9,48 @@ import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.hive.HiveContext;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
 public class RippleMain {
+    //date variables passed through the tagHadler from the JSP
     private static String sdate;
     private static String edate;
     public JsonObject jsonObject;
 
-    public static void setDates(String sdate1, String edate1) {
+    public String getStart() {
+        return sdate;
+    }
+
+    //setters and getters
+    public static void setStart(String sdate1) {
         sdate = sdate1;
+    }
+
+    public String getEnd() {
+        return edate;
+    }
+
+    public static void setEnd(String edate1) {
         edate = edate1;
     }
-    public static void main(String[] args) throws IOException /*try*/ {
+
+    public void main(String[] args) throws IOException /*try*/ {
         //hardcoded variables
+        //could incoporate them as options to be selected on JSP easily
         String base = "XRP";
         //selects currency and default gateway for the transaction data
         String counter = "EUR+rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq";
         //to default to current date, remove date variable
         String date = "2015-01-13T19:57:00Z";
-        //String date="2015-01-13";
-        //   Date date = new Date();
-        //select wheter we are looking for exchange rates or stats
+
+        //select whether we are looking for exchange rates or stats
         String apiMethod = "stats";
-        //DELETE??
-        String thisMoment = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                .withZone(ZoneOffset.UTC)
-                .format(Instant.now());
+
         //an array list to hold the url API queries we wish to make
         ArrayList<URL> URLList = new ArrayList<URL>();
 
@@ -84,8 +91,8 @@ public class RippleMain {
                     rippleUrl = new URL(new StringBuilder().append("https://data.ripple.com/v2/").append(apiMethod).append("/").append("?start=2016-03-30&end=2015-08-31&interval=hour&family=metric&metrics=accounts_created,exchanges_count,ledger_count,payments_count").toString());
                     URLList.add(rippleUrl);
                 }*/
-                System.out.println("2");
-                URLList = APIQueries.createQueries(apiMethod, start, end, interval);
+                System.out.println("2" + sdate + edate + "getter   :   " + this.getStart() + this.getEnd());
+                URLList = APIQueries.createQueries(apiMethod, sdate, edate, interval);
                 objType = new Stats();
                 break;
 
@@ -155,8 +162,8 @@ public class RippleMain {
         options.put("dbtable", "test");
         JavaSparkContext sc = new JavaSparkContext(new SparkConf().setAppName("DBConnection").setMaster("local[*]"));
         //SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
-        SQLContext sqlContext = new HiveContext(sc);
-
+        //SQLContext sqlContext = new HiveContext(sc);
+        SQLContext sqlContext = new SQLContext(sc);
         // DataFrame jdbcDF = sqlContext.load("jdbc", options).cache();
         DataFrame jdbcDF = sqlContext.jdbc(options.get("url"), options.get("dbtable"));
         jdbcDF = jdbcDF.select("*");//.where(jdbcDF.col("exchanges").isNotNull());
@@ -388,7 +395,7 @@ public class RippleMain {
         } catch (SQLException p) {
             p.getErrorCode();
         }*/
-//            Json2SparkSQL test= new Json2SparkSQL();
+
         //     test.dataFrame();
         //call the method from the pojo
         //System.out.println(Arrays.deepToString(RippleExchange.toPojo(jsonObject,objType).getStats()));

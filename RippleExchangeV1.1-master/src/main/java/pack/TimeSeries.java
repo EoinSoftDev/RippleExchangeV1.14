@@ -76,8 +76,8 @@ public class TimeSeries {
 //"\'{\"hello\":\"world\"}\'"
 // "{\"hello\":\"world\"}"
                 //"payments":1361.0
-                jStr += "{" + '"' + "payments" + '"' + ":" + "null" + ", ";
-                // jStr += "{" + '"' + "payments" + '"' + ":" + "0.0" + ", ";
+                //jStr += "{" + '"' + "payments" + '"' + ":" + "null" + ", ";
+                jStr += "{" + '"' + "payments" + '"' + ":" + "0.0" + ", ";
                 jStr += '"' + "key" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"' + ", ";
 
                 jStr += '"' + "date" + '"' + ":" + '"' + (Timestamp.valueOf(date)) + '"';
@@ -125,7 +125,7 @@ public class TimeSeries {
         formSimilar.printSchema();
         formSimilar.show();
         DataFrame makeSimilar = formSimilar.select(
-                formSimilar.col("col").getField("payments"), formSimilar.col("col").getField("key"), formSimilar.col("col").getField("date"));
+                formSimilar.col("col").getField("payments").cast("double"), formSimilar.col("col").getField("key"), formSimilar.col("col").getField("date"));
         formSimilar.printSchema();
         formSimilar.show();
 

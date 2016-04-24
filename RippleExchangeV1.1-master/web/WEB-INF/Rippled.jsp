@@ -87,8 +87,9 @@ runThis.main(args);
 <div id='fake_users1'>
 </div>
 
-<ex:Hello sdate="${param.sdate}" edate="${param.edate}"/>
-
+<ex:Hello sdate="${param.sdate}" edate="${param.edate}">
+    hi there
+</ex:Hello>
 </body>
 </html>
 
