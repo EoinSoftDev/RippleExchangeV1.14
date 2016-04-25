@@ -55,6 +55,7 @@ public class RippleMain {
         ArrayList<URL> URLList = new ArrayList<URL>();
 
         //select which api method you want to retrieve
+        //exchange_rates or stats
         URL rippleUrl = null;
         ApiMethod objType = null;
         switch (apiMethod) {
@@ -78,7 +79,7 @@ public class RippleMain {
                 objType = new ExchangeRates();
                 break;
             case ("stats"):
-                //CAN GET LAST 200 RESUlTS
+
                 String start = "2016-03-15";
                 String end = "2014-08-31";
                 String interval = "hour";
@@ -91,17 +92,17 @@ public class RippleMain {
                     rippleUrl = new URL(new StringBuilder().append("https://data.ripple.com/v2/").append(apiMethod).append("/").append("?start=2016-03-30&end=2015-08-31&interval=hour&family=metric&metrics=accounts_created,exchanges_count,ledger_count,payments_count").toString());
                     URLList.add(rippleUrl);
                 }*/
-                System.out.println("2" + sdate + edate + "getter   :   " + this.getStart() + this.getEnd());
+                //class that handles sending queries to the json api and storing them
                 URLList = APIQueries.createQueries(apiMethod, sdate, edate, interval);
-                objType = new Stats();
+
                 break;
 
             default:
-                System.out.println("no url");
+                System.out.println("no url specified");
 
         }
-        //Create a connection to the database
 
+        //Create a connection to the mySQL database
         Connection myConn = null;
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -110,7 +111,7 @@ public class RippleMain {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        //initialse varaibles
         Statement statement = null;
         URL rippleURL = null;
         //iterate through URLS creating JSONS and storing them to a mySQL table
@@ -120,18 +121,7 @@ public class RippleMain {
 
             //parsing the json from the url
             JsonObject jsonObject = RippleExchange.jsonParse(RippleExchange.urlJsonString((rippleUrl)));
-//Writing a json to a txt file
-        /*FileWriter file = new FileWriter("/home/eoin/Documents/JsonFiles/file1.txt");
-        try{
-            file.write(String.valueOf(jsonObject));
-            System.out.println("Sucessful copy");
-            System.out.println("\nJSOn : "+jsonObject);
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
-            file.flush();
-            file.close();
-        }*/
+            //using sql to inser data
             try {
                 PreparedStatement preparedStatement = myConn.prepareStatement("INSERT INTO test (exchanges) VALUES(?)");
 
@@ -141,11 +131,6 @@ public class RippleMain {
                 insertCount = preparedStatement.executeUpdate();
 
 /*
-            String st="{\"employees\":[\n" +
-        "    {\"firstName\":\"John\", \"lastName\":\"Doe\"},\n" +
-        "    {\"firstName\":\"Anna\", \"lastName\":\"Smith\"},\n" +
-        "    {\"firstName\":\"Peter\", \"lastName\":\"Jones\"}\n" +
-        "]}";
             String sql= "INSERT INTO test(data) VALUES("+st+")";
 
             statement.executeUpdate(sql);
