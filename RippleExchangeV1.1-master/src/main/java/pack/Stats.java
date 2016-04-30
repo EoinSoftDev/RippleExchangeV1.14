@@ -2,9 +2,7 @@ package pack;
 
 import java.lang.reflect.Array;
 
-/**
- * Created by 10318411 on 09/02/2016.
- */
+//Class to create  a POJO from Stats JSON
 public class Stats extends ApiMethod{
     private String result;
     private Array stats[];
@@ -21,13 +19,14 @@ public class Stats extends ApiMethod{
     {
         this.result=result;
     }
-    public void setStats(Array[] stats){
-        this.stats=stats;
-    }
 
     public Array[] getStats()
     {
         return stats;
+    }
+
+    public void setStats(Array[] stats) {
+        this.stats = stats;
     }
 
     public int getCount()

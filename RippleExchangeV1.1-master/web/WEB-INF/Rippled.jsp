@@ -10,18 +10,6 @@ http://localhost:8080/Rippled/WEB-INF/Rippled.jsp
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-/* if (request.getParameter("edate")!=null && request.getParameter("sdate")!=null)
-{
-
-}*/
-
-/* if ( start != null && end != null) {
-RippleMain runThis=new RippleMain();
-runThis.setDates(start,end);
-String[] args=null;
-runThis.main(args);
-}*/
-
 <html lang="en">
 <head>
 
@@ -43,7 +31,7 @@ runThis.main(args);
 <body>
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<h3>Welcome Fool</h3>
+<h3>Rippled</h3>
 <div style="height: 220px;" id="data_input">
     <form method="post">
         <p align="left">Enter Start Date: <input id="sdate" name="sdate" type="text" size="8" align="left">
@@ -61,34 +49,40 @@ runThis.main(args);
         // });
     </script>
 </div>
-
 <script>
 
-    /*
-     d3.json('data/ufo-sightings.json', function(data) {
-     data = MG.convert.date(data, 'year');
-     })*/
     jQuery.get('data.json', function (data) {
         data = MG.convert.date(data, 'date');
+
+        var markers = [{
+            'date': new Date('2016-02-01T00:00:00.000Z'),
+            'label': 'End of historical data'
+        }
+        ];
+
+
         MG.data_graphic({
-            title: "Line Chart",
-            description: "This is a simple line chart. You can remove the area portion by adding area: false to the arguments list.",
+            title: "ARIMA model of Payments Over the Ripple Network",
+            description: "Is a forecasting tool which predicts fluctuations in time series data of payments made over the Riplle Network",
             data: data,
-            width: 600,
-            height: 200,
+            width: 1200,
+            height: 400,
             right: 40,
             target: document.getElementById('fake_users1'),
             x_accessor: 'date',
             y_accessor: 'payments',
+            markers: markers,
+            //  target: '#markers'
 
         });
     });
 </script>
 <div id='fake_users1'>
 </div>
-
 <ex:Hello sdate="${param.sdate}" edate="${param.edate}">
-    hi there
+    <img id="logo" alt="NUI Galway Logo" src="http://www.nuigalway.ie/images/logos/logo.png">
+    <img class="transparent" alt="http://spark.apache.org/images/spark-logo-trademark.png"
+         src="http://spark.apache.org/images/spark-logo-trademark.png">
 </ex:Hello>
 </body>
 </html>

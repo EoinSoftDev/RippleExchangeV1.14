@@ -41,5 +41,3 @@ public class Timestamps {
         }
 
 }
-//yyyy-MM-dd'T'HH:mm:ss'Z'
-//2016-01-01 00:00:00.0
