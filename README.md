@@ -1,15 +1,3 @@
-Exception in thread "main" org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 3.0 failed 1 times, most recent failure: Lost task 0.0 in stage 3.0 (TID 4, localhost): java.lang.ClassCastException: java.lang.Integer cannot be cast to java.lang.Double
-	at scala.runtime.BoxesRunTime.unboxToDouble(BoxesRunTime.java:119)
-	at org.apache.spark.sql.Row$class.getDouble(Row.scala:243)
-	at org.apache.spark.sql.catalyst.expressions.GenericRow.getDouble(rows.scala:192)
-	at com.cloudera.sparkts.TimeSeriesRDD$$anonfun$15.apply(TimeSeriesRDD.scala:536)
-	at com.cloudera.sparkts.TimeSeriesRDD$$anonfun$15.apply(TimeSeriesRDD.scala:535)
-	at scala.collection.Iterator$$anon$11.next(Iterator.scala:328)
-	at org.apache.spark.shuffle.sort.BypassMergeSortShuffleWriter.write(BypassMergeSortShuffleWriter.java:149)
-	at org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:73)
-	at org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:41)
-	at org.apache.spark.scheduler.Task.run(Task.scala:89)
-	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:213)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
-	at java.lang.Thread.run(Thread.java:745)
+RippleTS webapp
+
+Coded as part of a college project. This web-app repeatedly queries the rippleAPI (an online currency) with user specified date parameters and options and gathers the data, writes it to a historical mySQL DBMS. The data is used by in-mem Spark Dataframes along with a new library for timeseries data (ClouderaTS) which creates a timeseriesRDD used in an ARIMA model to do some basic predictive modeling for the selected data. Front-end is  a JSP with as D3.js graph, back end is a java program.
